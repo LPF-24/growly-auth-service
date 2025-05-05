@@ -1,0 +1,88 @@
+package com.example.auth_service.controller;
+
+import com.example.auth_service.dto.JWTResponse;
+import com.example.auth_service.dto.LoginRequestDTO;
+import com.example.auth_service.dto.PersonRequestDTO;
+import com.example.auth_service.security.JWTUtil;
+import com.example.auth_service.security.PersonDetails;
+import com.example.auth_service.security.PersonDetailsService;
+import com.example.auth_service.security.RefreshTokenService;
+import com.example.auth_service.service.PeopleService;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
+
+@RestController
+@RequestMapping("/")
+@RequiredArgsConstructor
+public class AuthController {
+    private final JWTUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final PersonDetailsService personDetailsService;
+    private final RefreshTokenService refreshTokenService;
+    private final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final PeopleService peopleService;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> performAuthentication(@RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
+        try {
+            System.out.println(">>> Received login request: " + loginRequest.getUsername());
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                            loginRequest.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
+            String role = personDetails.getAuthorities().stream()
+                    .findFirst()
+                    .map(GrantedAuthority::getAuthority)
+                    .orElse("ROLE_USER");
+
+            String accessToken = jwtUtil.generateAccessToken(personDetails.getUsername(), role);
+            String refreshToken = jwtUtil.generateRefreshToken(personDetails.getUsername());
+
+            refreshTokenService.saveRefreshToken(personDetails.getUsername(), refreshToken);
+
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(Duration.ofDays(7))
+                    .sameSite("Lax")
+                    .build();
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            return ResponseEntity.ok(new JWTResponse(accessToken, personDetails.getId(), personDetails.getUsername()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new JWTResponse(null, null, "Invalid username or password"));
+        }
+    }
+
+    @PostMapping("/registration")
+    public ResponseEntity<String> register(@RequestBody @Valid PersonRequestDTO dto,
+                                               BindingResult bindingResult) {
+        peopleService.savePerson(dto);
+        return ResponseEntity.ok("User registered successfully");
+    }
+}

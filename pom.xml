@@ -33,6 +33,9 @@
 		<lombok.version>1.18.38</lombok.version>
 		<modelmapper.version>3.2.2</modelmapper.version>
 		<passay.version>1.6.6</passay.version>
+		<spring-data-redis.version>3.4.4</spring-data-redis.version>
+		<embedded-redis.version>0.6</embedded-redis.version>
+		<spring-boot-starter-data-redis.version>3.4.4</spring-boot-starter-data-redis.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -104,6 +107,25 @@
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
 			<version>4.5.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>${spring-data-redis.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+			<version>${spring-boot-starter-data-redis.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.kstyrc</groupId>
+			<artifactId>embedded-redis</artifactId>
+			<version>${embedded-redis.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>

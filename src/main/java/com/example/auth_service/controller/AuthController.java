@@ -3,6 +3,7 @@ package com.example.auth_service.controller;
 import com.example.auth_service.dto.JWTResponse;
 import com.example.auth_service.dto.LoginRequestDTO;
 import com.example.auth_service.dto.PersonRequestDTO;
+import com.example.auth_service.dto.PersonResponseDTO;
 import com.example.auth_service.security.JWTUtil;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.security.PersonDetailsService;
@@ -25,10 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 
@@ -80,9 +78,20 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<String> register(@RequestBody @Valid PersonRequestDTO dto,
-                                               BindingResult bindingResult) {
-        peopleService.savePerson(dto);
-        return ResponseEntity.ok("User registered successfully");
+    public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto,
+                                                      BindingResult bindingResult) {
+        PersonResponseDTO response = peopleService.savePerson(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletePerson(@PathVariable("id") Long personId) {
+        peopleService.deletePerson(personId);
+        return ResponseEntity.ok("User's account with id " + personId + " successfully deleted.");
+    }
+
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<PersonResponseDTO> getProfileInfo() {
+        return ResponseEntity.ok(peopleService.getCurrentUserInfo());
     }
 }

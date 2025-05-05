@@ -23,7 +23,11 @@ public class PersonMapper {
         return person;
     }
 
-    public PersonResponseDTO toResponseDTO(Person person) {
+    public PersonResponseDTO toResponse(Person person) {
+        return modelMapper.map(person, PersonResponseDTO.class);
+    }
+
+    public PersonResponseDTO fromRequestToResponseDTO(Person person) {
         return modelMapper.map(person, PersonResponseDTO.class);
     }
 }

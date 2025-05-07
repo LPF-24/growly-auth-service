@@ -25,12 +25,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.Map;
 
+@Validated
 @RestController
 @RequestMapping("/")
 @RequiredArgsConstructor
@@ -79,10 +80,10 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto,
-                                                      BindingResult bindingResult) {
+    public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto) {
         PersonResponseDTO response = peopleService.savePerson(dto);
-        return ResponseEntity.ok(response);
+        logger.info("User {} successfully created", dto.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{id}")

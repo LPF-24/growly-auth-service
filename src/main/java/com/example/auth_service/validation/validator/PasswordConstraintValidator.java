@@ -16,6 +16,13 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
     public boolean isValid(String password, ConstraintValidatorContext context) {
         logger.error("Password validation triggered for: {}", password);
 
+        if (password == null) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("Password cannot be null")
+                    .addConstraintViolation();
+            return false;
+        }
+
         PasswordValidator validator = new PasswordValidator(List.of(
                 new LengthRule(8, 30),
                 new CharacterRule(EnglishCharacterData.UpperCase, 1),

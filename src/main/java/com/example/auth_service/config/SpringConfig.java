@@ -56,6 +56,7 @@ public class SpringConfig {
                 )
                 .authenticationProvider(daoAuthenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(AbstractHttpConfigurer::disable)
                 .build();
     }
 

@@ -97,7 +97,7 @@ public class AuthController {
         return ResponseEntity.ok(peopleService.getCurrentUserInfo());
     }
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         try {
             String username = jwtUtil.validateRefreshToken(refreshToken).getClaim("username").asString();
@@ -119,5 +119,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid refresh token"));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken) {
+        String username = jwtUtil.validateRefreshToken(refreshToken).getClaim("username").asString();
+        refreshTokenService.deleteRefreshToken(username);
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(Map.of("message", "Logged out successfully"));
     }
 }

@@ -29,6 +29,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/")
@@ -93,5 +94,29 @@ public class AuthController {
     @GetMapping("/{id}/profile")
     public ResponseEntity<PersonResponseDTO> getProfileInfo() {
         return ResponseEntity.ok(peopleService.getCurrentUserInfo());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
+        try {
+            String username = jwtUtil.validateRefreshToken(refreshToken).getClaim("username").asString();
+            String role = personDetailsService.loadUserByUsername(username).getAuthorities().stream()
+                    .findFirst()
+                    .map(GrantedAuthority::getAuthority)
+                    .orElse("ROLE_USER");
+
+            String savedToken = refreshTokenService.getRefreshToken(username);
+
+            if (!refreshToken.equals(savedToken)) {
+                throw new RuntimeException("Refresh token is invalid or expired");
+            }
+
+            String newAccessToken = jwtUtil.generateAccessToken(username, role);
+
+            return ResponseEntity.ok(Map.of("access_token", newAccessToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid refresh token"));
+        }
     }
 }

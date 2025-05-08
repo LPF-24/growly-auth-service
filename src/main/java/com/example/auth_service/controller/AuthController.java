@@ -92,7 +92,7 @@ public class AuthController {
         return ResponseEntity.ok("User's account with id " + personId + " successfully deleted.");
     }
 
-    @GetMapping("/{id}/profile")
+    @GetMapping("/profile")
     public ResponseEntity<PersonResponseDTO> getProfileInfo() {
         return ResponseEntity.ok(peopleService.getCurrentUserInfo());
     }

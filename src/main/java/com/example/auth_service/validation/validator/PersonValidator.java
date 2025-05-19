@@ -30,12 +30,15 @@ public class PersonValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         System.out.println("Method validate of PersonValidator started");
-        if (target instanceof PersonRequestDTO) {
-            validateUsername(((PersonRequestDTO) target).getUsername(), null, errors);
+        if (target instanceof PersonRequestDTO targetDTO) {
+            validateUsername(targetDTO.getUsername(), null, errors);
+            validateEmail(targetDTO.getEmail(), null, errors);
+
         } else if (target instanceof PersonUpdateDTO dto) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
             validateUsername(dto.getUsername(), personDetails.getId(), errors);
+            validateEmail(dto.getEmail(), personDetails.getId(), errors);
         }
     }
 
@@ -48,6 +51,19 @@ public class PersonValidator implements Validator {
 
             if (!sameIdExists) {
                 errors.rejectValue("username", "username.taken", "This username is already taken!");
+            }
+        }
+    }
+
+    public void validateEmail(String email, Long id, Errors errors) {
+        List<Person> peopleWithSameEmail = peopleRepository.findByEmail(email);
+
+        if (!peopleWithSameEmail.isEmpty()) {
+            boolean sameIdExists = peopleWithSameEmail.stream()
+                    .anyMatch(person -> person.getId().equals(id));
+
+            if (!sameIdExists) {
+                errors.rejectValue("email", "email.taken", "This email is already taken!");
             }
         }
     }

@@ -1,14 +1,15 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.*;
+import com.example.auth_service.exception.ValidationException;
 import com.example.auth_service.security.JWTUtil;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.security.PersonDetailsService;
 import com.example.auth_service.security.RefreshTokenService;
 import com.example.auth_service.service.PeopleService;
+import com.example.auth_service.validation.validator.PersonValidator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -17,11 +18,11 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,13 +39,15 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final PeopleService peopleService;
+    private final PersonValidator personValidator;
 
-    public AuthController(JWTUtil jwtUtil, AuthenticationManager authenticationManager, PersonDetailsService personDetailsService, RefreshTokenService refreshTokenService, PeopleService peopleService) {
+    public AuthController(JWTUtil jwtUtil, AuthenticationManager authenticationManager, PersonDetailsService personDetailsService, RefreshTokenService refreshTokenService, PeopleService peopleService, PersonValidator personValidator) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.personDetailsService = personDetailsService;
         this.refreshTokenService = refreshTokenService;
         this.peopleService = peopleService;
+        this.personValidator = personValidator;
     }
 
     @PostMapping("/login")
@@ -84,7 +87,16 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto) {
+    public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto, BindingResult bindingResult) {
+        personValidator.validate(dto, bindingResult);
+        if (bindingResult.hasErrors()) {
+            System.out.println("Binding result has errors: ");
+            bindingResult.getFieldErrors().forEach(fieldError ->
+                    System.out.println(fieldError.getDefaultMessage()));
+            throw new ValidationException(bindingResult);
+        }
+
+        logger.info("Middle of the method");
         PersonResponseDTO response = peopleService.savePerson(dto);
         logger.info("User {} successfully created", dto.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -142,7 +154,16 @@ public class AuthController {
     }
 
     @PatchMapping
-    public ResponseEntity<PersonResponseDTO> updateUserInfo(@RequestBody @Valid PersonUpdateDTO dto) {
+    public ResponseEntity<PersonResponseDTO> updateUserInfo(@RequestBody @Valid PersonUpdateDTO dto, BindingResult bindingResult) {
+        personValidator.validate(dto, bindingResult);
+        if (bindingResult.hasErrors()) {
+            System.out.println("Binding result has errors: ");
+            bindingResult.getFieldErrors().forEach(fieldError ->
+                    System.out.println(fieldError.getDefaultMessage()));
+            throw new ValidationException(bindingResult);
+        }
+
+        System.out.println("Middle of the method");
         PersonResponseDTO response = peopleService.updateCurrentUserInfo(dto);
         return ResponseEntity.ok(response);
     }

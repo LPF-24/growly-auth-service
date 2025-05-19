@@ -19,7 +19,7 @@ public class PersonDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Person user = peopleRepository.findByUsername(username)
+        Person user = peopleRepository.findByUsername(username).stream().findFirst()
                 .orElseThrow(() -> new UsernameNotFoundException("Username doesn't found!"));
         return new PersonDetails(user);
     }

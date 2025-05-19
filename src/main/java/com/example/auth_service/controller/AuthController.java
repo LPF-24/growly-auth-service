@@ -102,8 +102,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePerson(@PathVariable("id") Long personId) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deletePerson() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
+        Long personId = personDetails.getId();
+
         peopleService.deletePerson(personId);
         return ResponseEntity.ok("User's account with id " + personId + " successfully deleted.");
     }

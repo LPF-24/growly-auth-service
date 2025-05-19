@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +26,13 @@ public class PeopleService {
     private final PeopleRepository peopleRepository;
     private final PersonMapper personMapper;
     private final PersonConverter personConverter;
+    private final PasswordEncoder passwordEncoder;
 
-    public PeopleService(PeopleRepository peopleRepository, PersonMapper personMapper, PersonConverter personConverter) {
+    public PeopleService(PeopleRepository peopleRepository, PersonMapper personMapper, PersonConverter personConverter, PasswordEncoder passwordEncoder) {
         this.peopleRepository = peopleRepository;
         this.personMapper = personMapper;
         this.personConverter = personConverter;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -77,6 +80,11 @@ public class PeopleService {
         }
 
         personConverter.updatePersonFromDtoWithFixedFields(dto, personToUpdate);
+
+        //TODO
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            personToUpdate.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
 
         return personMapper.toResponse(peopleRepository.save(personToUpdate));
     }

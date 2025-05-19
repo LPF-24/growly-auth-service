@@ -1,9 +1,6 @@
 package com.example.auth_service.controller;
 
-import com.example.auth_service.dto.JWTResponse;
-import com.example.auth_service.dto.LoginRequestDTO;
-import com.example.auth_service.dto.PersonRequestDTO;
-import com.example.auth_service.dto.PersonResponseDTO;
+import com.example.auth_service.dto.*;
 import com.example.auth_service.security.JWTUtil;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.security.PersonDetailsService;
@@ -34,7 +31,6 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/")
-@RequiredArgsConstructor
 public class AuthController {
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -42,6 +38,14 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final PeopleService peopleService;
+
+    public AuthController(JWTUtil jwtUtil, AuthenticationManager authenticationManager, PersonDetailsService personDetailsService, RefreshTokenService refreshTokenService, PeopleService peopleService) {
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+        this.personDetailsService = personDetailsService;
+        this.refreshTokenService = refreshTokenService;
+        this.peopleService = peopleService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> performAuthentication(@RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
@@ -135,5 +139,11 @@ public class AuthController {
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body(Map.of("message", "Logged out successfully"));
+    }
+
+    @PatchMapping
+    public ResponseEntity<PersonResponseDTO> updateUserInfo(@RequestBody @Valid PersonUpdateDTO dto) {
+        PersonResponseDTO response = peopleService.updateCurrentUserInfo(dto);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,5 +1,4 @@
 src/main/resources/application.yml
-src/main/java/com/example/auth_service/exception/ErrorResponseDTO.java
 
 HELP.md
 target/

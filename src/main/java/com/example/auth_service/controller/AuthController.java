@@ -1,6 +1,7 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.*;
+import com.example.auth_service.exception.ErrorResponseDTO;
 import com.example.auth_service.exception.ValidationException;
 import com.example.auth_service.security.JWTUtil;
 import com.example.auth_service.security.PersonDetails;
@@ -81,8 +82,12 @@ public class AuthController {
 
             return ResponseEntity.ok(new JWTResponse(accessToken, personDetails.getId(), personDetails.getUsername()));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new JWTResponse(null, null, "Invalid username or password"));
+            ErrorResponseDTO error = new ErrorResponseDTO();
+            error.setStatus(401);
+            error.setMessage("Invalid username or password");
+            error.setPath("/login");
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
 

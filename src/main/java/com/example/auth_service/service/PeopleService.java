@@ -42,7 +42,7 @@ public class PeopleService {
         return personMapper.toResponse(person);
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() && #id == authentication.principal.id")
     @Transactional
     public void deletePerson(Long personId) {
         peopleRepository.deleteById(personId);

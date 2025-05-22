@@ -66,7 +66,7 @@ public class AuthController {
                     .map(GrantedAuthority::getAuthority)
                     .orElse("ROLE_USER");
 
-            String accessToken = jwtUtil.generateAccessToken(personDetails.getUsername(), role);
+            String accessToken = jwtUtil.generateAccessToken(personDetails.getId(), personDetails.getUsername(), role);
             String refreshToken = jwtUtil.generateRefreshToken(personDetails.getUsername());
 
             refreshTokenService.saveRefreshToken(personDetails.getUsername(), refreshToken);
@@ -126,6 +126,7 @@ public class AuthController {
     public ResponseEntity<?> refreshToken(@CookieValue("refreshToken") String refreshToken) {
         try {
             String username = jwtUtil.validateRefreshToken(refreshToken).getClaim("username").asString();
+            Long id = ((PersonDetails) personDetailsService.loadUserByUsername(username)).getId();
             String role = personDetailsService.loadUserByUsername(username).getAuthorities().stream()
                     .findFirst()
                     .map(GrantedAuthority::getAuthority)
@@ -137,7 +138,7 @@ public class AuthController {
                 throw new RuntimeException("Refresh token is invalid or expired");
             }
 
-            String newAccessToken = jwtUtil.generateAccessToken(username, role);
+            String newAccessToken = jwtUtil.generateAccessToken(id, username, role);
 
             return ResponseEntity.ok(Map.of("access_token", newAccessToken));
         } catch (Exception e) {

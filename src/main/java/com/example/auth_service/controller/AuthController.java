@@ -22,6 +22,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -80,7 +81,7 @@ public class AuthController {
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            return ResponseEntity.ok(new JWTResponse(accessToken, personDetails.getId(), personDetails.getUsername()));
+            return ResponseEntity.ok(new JWTResponse(accessToken, personDetails.getId(), personDetails.getUsername(), personDetails.getEmail()));
         } catch (BadCredentialsException e) {
             ErrorResponseDTO error = new ErrorResponseDTO();
             error.setStatus(401);
@@ -108,9 +109,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deletePerson() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
+    public ResponseEntity<String> deletePerson(@AuthenticationPrincipal PersonDetails personDetails) {
+        peopleService.deletePerson(personDetails.getId());
         Long personId = personDetails.getId();
 
         peopleService.deletePerson(personId);

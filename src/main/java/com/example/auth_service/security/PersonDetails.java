@@ -55,4 +55,8 @@ public class PersonDetails implements UserDetails {
     public Long getId() {
         return person.getId();
     }
+
+    public String getEmail() {
+        return person.getEmail();
+    }
 }

@@ -3,6 +3,7 @@ package com.example.auth_service.service;
 import com.example.auth_service.dto.PersonRequestDTO;
 import com.example.auth_service.dto.PersonResponseDTO;
 import com.example.auth_service.dto.PersonUpdateDTO;
+import com.example.auth_service.dto.UserDeletedEvent;
 import com.example.auth_service.entity.Person;
 import com.example.auth_service.mapper.PersonConverter;
 import com.example.auth_service.mapper.PersonMapper;
@@ -11,6 +12,7 @@ import com.example.auth_service.security.PersonDetails;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,12 +29,14 @@ public class PeopleService {
     private final PersonMapper personMapper;
     private final PersonConverter personConverter;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaTemplate<String, UserDeletedEvent> kafkaTemplate;
 
-    public PeopleService(PeopleRepository peopleRepository, PersonMapper personMapper, PersonConverter personConverter, PasswordEncoder passwordEncoder) {
+    public PeopleService(PeopleRepository peopleRepository, PersonMapper personMapper, PersonConverter personConverter, PasswordEncoder passwordEncoder, KafkaTemplate<String, UserDeletedEvent> kafkaTemplate) {
         this.peopleRepository = peopleRepository;
         this.personMapper = personMapper;
         this.personConverter = personConverter;
         this.passwordEncoder = passwordEncoder;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Transactional
@@ -46,6 +50,8 @@ public class PeopleService {
     @Transactional
     public void deletePerson(Long personId) {
         peopleRepository.deleteById(personId);
+        kafkaTemplate.send("user-deleted", new UserDeletedEvent(personId));
+        System.out.println("🛰 Sent event to Kafka: userId = " + personId);
     }
 
     @PreAuthorize("isAuthenticated()")

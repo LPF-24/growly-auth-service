@@ -1,38 +1,15 @@
-package com.example.auth_service.entity;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package com.example.auth_service.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-@Table(name = "person")
-public class Person {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserStatsDTO {
     private Long id;
-
-    @NotBlank
-    @Column(name = "username", nullable = false, length = 100)
     private String username;
-
-    @Column(nullable = false, length = 100)
-    private String password;
-
-    @Column(nullable = false, length = 50)
     private String email;
-
-    @Column(nullable = false, length = 100)
     private String role;
-
-    @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-    public Person() {
+    public UserStatsDTO() {
     }
 
     public Long getId() {
@@ -49,14 +26,6 @@ public class Person {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getEmail() {

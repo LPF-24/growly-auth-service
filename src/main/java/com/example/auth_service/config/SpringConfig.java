@@ -57,7 +57,7 @@ public class SpringConfig {
                         .requestMatchers("/admin/promote").hasRole("USER")
                         .requestMatchers("/delete", "/profile", "/refresh", "/logout", "/update")
                         .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin/test").hasRole("ADMIN")
+                        .requestMatchers("/admin/test", "/admin/all-users", "/admin/stats").hasRole("ADMIN")
                 )
                 .authenticationProvider(daoAuthenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

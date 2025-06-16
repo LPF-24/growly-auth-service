@@ -1,6 +1,8 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.CodeRequestDTO;
+import com.example.auth_service.dto.PersonResponseDTO;
+import com.example.auth_service.dto.UserStatsDTO;
 import com.example.auth_service.exception.ValidationException;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.service.AdminService;
@@ -14,7 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
@@ -53,5 +55,17 @@ public class AdminController {
         adminService.promotePerson(personDetails.getId());
         System.out.println("Promotion was successful");
         return logoutService.buildLogoutResponse(personDetails.getUsername());
+    }
+
+    @GetMapping("/all-users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<PersonResponseDTO>> getAllUsers() {
+        return ResponseEntity.ok(adminService.findAllUsers());
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserStatsDTO> getUserStats() {
+        return adminService.getAllUserStats();
     }
 }

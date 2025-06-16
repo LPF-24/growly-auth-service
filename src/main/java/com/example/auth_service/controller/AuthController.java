@@ -84,6 +84,8 @@ public class AuthController {
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
+            peopleService.setLastLogin(personDetails.getId());
+
             return ResponseEntity.ok(new JWTResponse(accessToken, personDetails.getId(), personDetails.getUsername(), personDetails.getEmail()));
         } catch (BadCredentialsException e) {
             ErrorResponseDTO error = new ErrorResponseDTO();

@@ -1,9 +1,6 @@
 package com.example.auth_service.service;
 
-import com.example.auth_service.dto.PersonRequestDTO;
-import com.example.auth_service.dto.PersonResponseDTO;
-import com.example.auth_service.dto.PersonUpdateDTO;
-import com.example.auth_service.dto.UserDeletedEvent;
+import com.example.auth_service.dto.*;
 import com.example.auth_service.entity.Person;
 import com.example.auth_service.mapper.PersonConverter;
 import com.example.auth_service.mapper.PersonMapper;
@@ -11,7 +8,6 @@ import com.example.auth_service.repository.PeopleRepository;
 import com.example.auth_service.security.PersonDetails;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -92,5 +89,13 @@ public class PeopleService {
         }
 
         return personMapper.toResponse(peopleRepository.save(personToUpdate));
+    }
+
+    public void setLastLogin(Long userId) {
+        Person currentUser = peopleRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " wasn't found!"));
+
+        currentUser.setLastLogin(LocalDateTime.now());
+        peopleRepository.save(currentUser);
     }
 }

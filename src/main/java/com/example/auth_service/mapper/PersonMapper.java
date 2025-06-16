@@ -2,6 +2,7 @@ package com.example.auth_service.mapper;
 
 import com.example.auth_service.dto.PersonRequestDTO;
 import com.example.auth_service.dto.PersonResponseDTO;
+import com.example.auth_service.dto.UserStatsDTO;
 import com.example.auth_service.entity.Person;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -33,5 +34,9 @@ public class PersonMapper {
 
     public PersonResponseDTO fromRequestToResponseDTO(Person person) {
         return modelMapper.map(person, PersonResponseDTO.class);
+    }
+
+    public UserStatsDTO toStatsDTO(Person person) {
+        return modelMapper.map(person, UserStatsDTO.class);
     }
 }

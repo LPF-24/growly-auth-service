@@ -4,7 +4,9 @@ import com.example.auth_service.dto.CodeRequestDTO;
 import com.example.auth_service.exception.ValidationException;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.service.AdminService;
+import com.example.auth_service.service.LogoutService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -12,15 +14,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
     private final AuthenticationManager authenticationManager;
     private final AdminService adminService;
+    private final LogoutService logoutService;
 
-    public AdminController(AuthenticationManager authenticationManager, AdminService adminService) {
+    public AdminController(AuthenticationManager authenticationManager, AdminService adminService, LogoutService logoutService) {
         this.authenticationManager = authenticationManager;
         this.adminService = adminService;
+        this.logoutService = logoutService;
     }
 
     @GetMapping("/test")
@@ -31,7 +37,7 @@ public class AdminController {
     }
 
     @PatchMapping("/promote")
-    public void promote(@RequestBody @Valid CodeRequestDTO code, BindingResult bindingResult) {
+    public ResponseEntity<?> promote(@RequestBody @Valid CodeRequestDTO code, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             System.out.println("BindingResult has errors: ");
             bindingResult.getFieldErrors().forEach(fieldError -> {
@@ -46,5 +52,6 @@ public class AdminController {
         System.out.println("Middle of the method");
         adminService.promotePerson(personDetails.getId());
         System.out.println("Promotion was successful");
+        return logoutService.buildLogoutResponse(personDetails.getUsername());
     }
 }

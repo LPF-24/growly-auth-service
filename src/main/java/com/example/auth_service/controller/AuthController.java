@@ -7,6 +7,7 @@ import com.example.auth_service.security.JWTUtil;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.security.PersonDetailsService;
 import com.example.auth_service.security.RefreshTokenService;
+import com.example.auth_service.service.LogoutService;
 import com.example.auth_service.service.PeopleService;
 import com.example.auth_service.validation.validator.PersonValidator;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,14 +43,16 @@ public class AuthController {
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final PeopleService peopleService;
     private final PersonValidator personValidator;
+    private final LogoutService logoutService;
 
-    public AuthController(JWTUtil jwtUtil, AuthenticationManager authenticationManager, PersonDetailsService personDetailsService, RefreshTokenService refreshTokenService, PeopleService peopleService, PersonValidator personValidator) {
+    public AuthController(JWTUtil jwtUtil, AuthenticationManager authenticationManager, PersonDetailsService personDetailsService, RefreshTokenService refreshTokenService, PeopleService peopleService, PersonValidator personValidator, LogoutService logoutService) {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.personDetailsService = personDetailsService;
         this.refreshTokenService = refreshTokenService;
         this.peopleService = peopleService;
         this.personValidator = personValidator;
+        this.logoutService = logoutService;
     }
 
     @PostMapping("/login")
@@ -150,17 +153,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshToken) {
         String username = jwtUtil.validateRefreshToken(refreshToken).getClaim("username").asString();
-        refreshTokenService.deleteRefreshToken(username);
-
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body(Map.of("message", "Logged out successfully"));
+        return logoutService.buildLogoutResponse(username);
     }
 
     @PatchMapping

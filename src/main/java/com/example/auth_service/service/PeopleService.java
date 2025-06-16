@@ -46,7 +46,7 @@ public class PeopleService {
         return personMapper.toResponse(person);
     }
 
-    @PreAuthorize("isAuthenticated() && #personId == authentication.principal.id")
+    @PreAuthorize("hasRole('ROLE_ADMIN') || #personId == authentication.principal.id")
     @Transactional
     public void deletePerson(Long personId) {
         peopleRepository.deleteById(personId);

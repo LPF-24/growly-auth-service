@@ -156,7 +156,7 @@ public class AuthController {
         return logoutService.buildLogoutResponse(username);
     }
 
-    @PatchMapping
+    @PatchMapping("/update")
     public ResponseEntity<PersonResponseDTO> updateUserInfo(@RequestBody @Valid PersonUpdateDTO dto, BindingResult bindingResult) {
         personValidator.validate(dto, bindingResult);
         if (bindingResult.hasErrors()) {

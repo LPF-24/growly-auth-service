@@ -53,10 +53,10 @@ public class SpringConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/registration", "/delete", "/profile", "/refresh", "/logout",
-                                "/admin/promote").permitAll()
-                        //TODO
-                        .requestMatchers(HttpMethod.PATCH, "/").permitAll()
+                        .requestMatchers("/login", "/registration").permitAll()
+                        .requestMatchers("/admin/promote").hasRole("USER")
+                        .requestMatchers("/delete", "/profile", "/refresh", "/logout", "/update")
+                        .hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/test").hasRole("ADMIN")
                 )
                 .authenticationProvider(daoAuthenticationProvider)

@@ -7,6 +7,7 @@ import com.example.auth_service.exception.ValidationException;
 import com.example.auth_service.security.PersonDetails;
 import com.example.auth_service.service.AdminService;
 import com.example.auth_service.service.LogoutService;
+import com.example.auth_service.service.PeopleService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,14 +22,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-    private final AuthenticationManager authenticationManager;
     private final AdminService adminService;
     private final LogoutService logoutService;
+    private final PeopleService peopleService;
 
-    public AdminController(AuthenticationManager authenticationManager, AdminService adminService, LogoutService logoutService) {
-        this.authenticationManager = authenticationManager;
+    public AdminController(AdminService adminService, LogoutService logoutService, PeopleService peopleService) {
         this.adminService = adminService;
         this.logoutService = logoutService;
+        this.peopleService = peopleService;
     }
 
     @GetMapping("/test")
@@ -67,5 +68,12 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserStatsDTO> getUserStats() {
         return adminService.getAllUserStats();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteUserByAdmin(@PathVariable Long id) {
+        peopleService.deletePerson(id);
+        return ResponseEntity.ok("User with ID " + id + " was deleted by admin");
     }
 }

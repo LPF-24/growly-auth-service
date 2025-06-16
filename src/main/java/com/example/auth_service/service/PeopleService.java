@@ -51,7 +51,7 @@ public class PeopleService {
     public void deletePerson(Long personId) {
         peopleRepository.deleteById(personId);
         kafkaTemplate.send("user-deleted", new UserDeletedEvent(personId));
-        System.out.println("🛰 Sent event to Kafka: userId = " + personId);
+        System.out.println("Sent event to Kafka: userId = " + personId);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -87,7 +87,6 @@ public class PeopleService {
 
         personConverter.updatePersonFromDtoWithFixedFields(dto, personToUpdate);
 
-        //TODO
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             personToUpdate.setPassword(passwordEncoder.encode(dto.getPassword()));
         }

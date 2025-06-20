@@ -1,7 +1,10 @@
 package com.example.auth_service.config;
 
+import com.example.auth_service.exception.CustomAccessDeniedHandler;
+import com.example.auth_service.exception.CustomAuthenticationEntryPoint;
 import com.example.auth_service.security.PersonDetailsService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,9 +27,14 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 @EnableMethodSecurity
 public class SpringConfig {
     private final JWTFilter jwtFilter;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    public SpringConfig(JWTFilter jwtFilter) {
+    @Autowired
+    public SpringConfig(JWTFilter jwtFilter, CustomAccessDeniedHandler customAccessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
         this.jwtFilter = jwtFilter;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
     @Bean
@@ -63,6 +71,10 @@ public class SpringConfig {
                 .authenticationProvider(daoAuthenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(AbstractHttpConfigurer::disable)
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 .build();
     }
 

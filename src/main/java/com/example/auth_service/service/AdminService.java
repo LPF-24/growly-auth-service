@@ -7,6 +7,7 @@ import com.example.auth_service.mapper.PersonMapper;
 import com.example.auth_service.repository.PeopleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class AdminService {
         this.personMapper = personMapper;
     }
 
+    @Transactional
     public void promotePerson(Long personId) {
         Person user = peopleRepository.findById(personId)
                 .orElseThrow(() -> new EntityNotFoundException("User with this id " + personId + " can't be found"));
@@ -28,10 +30,12 @@ public class AdminService {
         peopleRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<PersonResponseDTO> findAllUsers() {
         return peopleRepository.findAll().stream().map(personMapper::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<UserStatsDTO> getAllUserStats() {
         return peopleRepository.findAll().stream().map(personMapper::toStatsDTO).toList();
     }

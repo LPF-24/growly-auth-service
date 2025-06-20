@@ -1,12 +1,20 @@
 package com.example.auth_service.dto;
 
+import com.example.auth_service.util.SwaggerConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDateTime;
 
 public class UserStatsDTO {
+    @Schema(description = SwaggerConstants.ID_DESC, example = SwaggerConstants.ID_EXAMPLE)
     private Long id;
+    @Schema(description = SwaggerConstants.USERNAME_DESC, example = SwaggerConstants.USERNAME_EXAMPLE)
     private String username;
+    @Schema(description = SwaggerConstants.EMAIL_DESC, example = SwaggerConstants.EMAIL_EXAMPLE)
     private String email;
+    @Schema(description = SwaggerConstants.ROLE_DESC, example = SwaggerConstants.ROLE_EXAMPLE)
     private String role;
+    @Schema(description = SwaggerConstants.LAST_LOGIN_DESC, example = SwaggerConstants.LAST_LOGIN_EXAMPLE)
     private LocalDateTime lastLogin;
 
     public UserStatsDTO() {

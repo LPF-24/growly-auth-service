@@ -1,16 +1,22 @@
 package com.example.auth_service.dto;
 
+import com.example.auth_service.util.SwaggerConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class PersonResponseDTO {
+    @Schema(description = SwaggerConstants.ID_DESC, example = SwaggerConstants.ID_EXAMPLE)
     private Long id;
 
+    @Schema(description = SwaggerConstants.USERNAME_DESC, example = SwaggerConstants.USERNAME_EXAMPLE)
     private String username;
 
+    @Schema(description = SwaggerConstants.EMAIL_DESC, example = SwaggerConstants.EMAIL_EXAMPLE)
     private String email;
 
+    @Schema(description = SwaggerConstants.ROLE_DESC, example = SwaggerConstants.ROLE_EXAMPLE)
     private String role;
 
     public PersonResponseDTO() {

@@ -62,6 +62,12 @@ public class SpringConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/registration").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers("/admin/promote").hasRole("USER")
                         .requestMatchers("/delete", "/profile", "/refresh", "/logout", "/update")
                         .hasAnyRole("USER", "ADMIN")

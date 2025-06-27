@@ -8,6 +8,8 @@ import com.example.auth_service.repository.PeopleRepository;
 import com.example.auth_service.security.PersonDetails;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,7 @@ public class PeopleService {
     private final PersonConverter personConverter;
     private final PasswordEncoder passwordEncoder;
     private final KafkaTemplate<String, UserDeletedEvent> kafkaTemplate;
+    private final Logger logger = LoggerFactory.getLogger(PeopleService.class);
 
     public PeopleService(PeopleRepository peopleRepository, PersonMapper personMapper, PersonConverter personConverter, PasswordEncoder passwordEncoder, KafkaTemplate<String, UserDeletedEvent> kafkaTemplate) {
         this.peopleRepository = peopleRepository;
@@ -48,7 +51,7 @@ public class PeopleService {
     public void deletePerson(Long personId) {
         peopleRepository.deleteById(personId);
         kafkaTemplate.send("user-deleted", new UserDeletedEvent(personId));
-        System.out.println("Sent event to Kafka: userId = " + personId);
+        logger.info("Sent event to Kafka: userId = {}", personId);
     }
 
     @PreAuthorize("isAuthenticated()")

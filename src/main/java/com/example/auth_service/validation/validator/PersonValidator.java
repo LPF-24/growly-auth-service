@@ -5,6 +5,8 @@ import com.example.auth_service.dto.PersonUpdateDTO;
 import com.example.auth_service.entity.Person;
 import com.example.auth_service.repository.PeopleRepository;
 import com.example.auth_service.security.PersonDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -12,11 +14,11 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class PersonValidator implements Validator {
     private final PeopleRepository peopleRepository;
+    private final Logger logger = LoggerFactory.getLogger(PersonValidator.class);
 
     public PersonValidator(PeopleRepository peopleRepository) {
         this.peopleRepository = peopleRepository;
@@ -29,7 +31,7 @@ public class PersonValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
-        System.out.println("Method validate of PersonValidator started");
+        logger.info("Method validate of PersonValidator started");
         if (target instanceof PersonRequestDTO targetDTO) {
             validateUsername(targetDTO.getUsername(), null, errors);
             validateEmail(targetDTO.getEmail(), null, errors);

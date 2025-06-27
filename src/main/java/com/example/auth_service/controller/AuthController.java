@@ -109,7 +109,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> performAuthentication(@RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
         try {
-            System.out.println(">>> Received login request: " + loginRequest.getUsername());
+            logger.debug(">>> Received login request: {}", loginRequest.getUsername());
             Authentication authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                             loginRequest.getPassword()));
@@ -199,9 +199,9 @@ public class AuthController {
     public ResponseEntity<PersonResponseDTO> register(@RequestBody @Valid PersonRequestDTO dto, BindingResult bindingResult) {
         personValidator.validate(dto, bindingResult);
         if (bindingResult.hasErrors()) {
-            System.out.println("Binding result has errors: ");
+            logger.error("Binding result has errors: ");
             bindingResult.getFieldErrors().forEach(fieldError ->
-                    System.out.println(fieldError.getDefaultMessage()));
+                    logger.error(fieldError.getDefaultMessage()));
             throw new ValidationException(bindingResult);
         }
 
@@ -450,13 +450,13 @@ public class AuthController {
     public ResponseEntity<PersonResponseDTO> updateUserInfo(@RequestBody @Valid PersonUpdateDTO dto, BindingResult bindingResult) {
         personValidator.validate(dto, bindingResult);
         if (bindingResult.hasErrors()) {
-            System.out.println("Binding result has errors: ");
+            logger.error("Binding result has errors: ");
             bindingResult.getFieldErrors().forEach(fieldError ->
-                    System.out.println(fieldError.getDefaultMessage()));
+                    logger.error(fieldError.getDefaultMessage()));
             throw new ValidationException(bindingResult);
         }
 
-        System.out.println("Middle of the method");
+        logger.debug("Middle of the method");
         PersonResponseDTO response = peopleService.updateCurrentUserInfo(dto);
         return ResponseEntity.ok(response);
     }

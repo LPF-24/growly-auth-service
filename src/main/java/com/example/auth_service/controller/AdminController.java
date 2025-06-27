@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -33,6 +35,7 @@ public class AdminController {
     private final AdminService adminService;
     private final LogoutService logoutService;
     private final PeopleService peopleService;
+    private final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     public AdminController(AdminService adminService, LogoutService logoutService, PeopleService peopleService) {
         this.adminService = adminService;
@@ -91,9 +94,9 @@ public class AdminController {
     @PatchMapping("/promote")
     public ResponseEntity<?> promote(@RequestBody @Valid CodeRequestDTO code, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            System.out.println("BindingResult has errors: ");
+            logger.error("BindingResult has errors: ");
             bindingResult.getFieldErrors().forEach(fieldError -> {
-                System.out.println(fieldError.getDefaultMessage());
+                logger.error(fieldError.getDefaultMessage());
             });
             throw new ValidationException(bindingResult);
         }
@@ -101,9 +104,9 @@ public class AdminController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
 
-        System.out.println("Middle of the method");
+        logger.debug("Middle of the method");
         adminService.promotePerson(personDetails.getId());
-        System.out.println("Promotion was successful");
+        logger.info("Promotion was successful");
         return logoutService.buildLogoutResponse(personDetails.getUsername());
     }
 

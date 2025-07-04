@@ -3,6 +3,7 @@ package com.example.auth_service;
 import com.example.auth_service.dto.PersonRequestDTO;
 import com.example.auth_service.dto.PersonResponseDTO;
 import com.example.auth_service.dto.PersonUpdateDTO;
+import com.example.auth_service.dto.UserDeletedEvent;
 import com.example.auth_service.entity.Person;
 import com.example.auth_service.mapper.PersonConverter;
 import com.example.auth_service.mapper.PersonMapper;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,8 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -50,6 +51,9 @@ public class PeopleServiceTest {
 
     @Mock
     private Authentication authentication;
+
+    @Mock
+    private KafkaTemplate<String, UserDeletedEvent> kafkaTemplate;
 
     @InjectMocks
     private PeopleService peopleService;
@@ -203,4 +207,43 @@ public class PeopleServiceTest {
         response.setRole("ROLE_USER");
         return response;
     }
+
+    @Nested
+    class SetLastLoginTests {
+
+        @Test
+        void checkingThatLastLoginWasAssignedSuccessfully() {
+            Person person = createSamplePerson();
+
+            when(peopleRepository.findById(1L)).thenReturn(Optional.of(person));
+
+            peopleService.setLastLogin(1L);
+
+            assertNotNull(person.getLastLogin());
+            verify(peopleRepository).save(person);
+        }
+
+        @Test
+        void shouldThrowException_whenUserNotFound() {
+            when(peopleRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(EntityNotFoundException.class, () -> peopleService.setLastLogin(99L));
+        }
+    }
+
+    @Nested
+    class DeletePersonTests {
+
+        @Test
+        void shouldDeletePerson_andSendKafkaEvent() {
+            Long personId = 1L;
+
+            peopleService.deletePerson(personId);
+
+            verify(peopleRepository).deleteById(personId);
+            verify(kafkaTemplate).send(eq("user-deleted"),argThat(event ->
+                    event != null && event.getPersonId().equals(personId)));
+        }
+    }
+
 }

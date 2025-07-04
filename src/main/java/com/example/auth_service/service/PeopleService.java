@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -82,7 +84,7 @@ public class PeopleService {
         ).allMatch(Objects::isNull);
 
         if (allFieldsNull) {
-            throw new BadRequestException("Nothing to update");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nothing to update");
         }
 
         personConverter.updatePersonFromDtoWithFixedFields(dto, personToUpdate);

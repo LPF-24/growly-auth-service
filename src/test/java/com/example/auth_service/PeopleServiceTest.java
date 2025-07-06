@@ -6,6 +6,7 @@ import com.example.auth_service.dto.PersonUpdateDTO;
 import com.example.auth_service.dto.UserDeletedEvent;
 import com.example.auth_service.entity.Person;
 import com.example.auth_service.mapper.PersonConverter;
+import com.example.auth_service.mapper.PersonConverterImpl;
 import com.example.auth_service.mapper.PersonMapper;
 import com.example.auth_service.repository.PeopleRepository;
 import com.example.auth_service.security.PersonDetails;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -28,7 +30,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,11 +38,11 @@ public class PeopleServiceTest {
     @Mock
     private PeopleRepository peopleRepository;
 
-    @Mock
-    private PersonMapper personMapper;
+    /*@Mock
+    private PersonMapper personMapper;*/
 
-    @Mock
-    private PersonConverter personConverter;
+    // @Mock
+    private final PersonConverter personConverter = new PersonConverterImpl();
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -61,36 +62,60 @@ public class PeopleServiceTest {
     Person person;
     PersonDetails personDetails;
 
+    @BeforeEach
+    void setUp() {
+        ModelMapper modelMapper = new ModelMapper();
+
+        PersonMapper personMapper = new PersonMapper(modelMapper, passwordEncoder);
+        peopleService = new PeopleService(peopleRepository, personMapper, personConverter, passwordEncoder, kafkaTemplate);
+    }
+
     @Test
     void savePerson_shouldSaveAndReturnDTO() {
-        // given
+        // Arrange
         PersonRequestDTO dto = new PersonRequestDTO();
         dto.setUsername("john");
-        dto.setEmail("john@example.com");
+        dto.setEmail("john@gmail.com");
+        dto.setPassword("secret");
 
-        Person person = new Person();
-        person.setUsername("john");
-        person.setEmail("john@example.com");
+        // Мокаем поведение passwordEncoder
+        when(passwordEncoder.encode("secret")).thenReturn("encoded-secret");
 
-        Person savedPerson = createSamplePerson();
+        // Гарантируем, что объект, переданный в save(...), получит id = 1L
+        when(peopleRepository.save(any(Person.class))).thenAnswer(invocation -> {
+            Person p = invocation.getArgument(0);
+            p.setId(1L); // здесь мы симулируем "БД назначила ID"
+            return p;
+        });
 
-        PersonResponseDTO responseDTO = createSampleResponseDTO();
-
-        when(personMapper.toEntity(dto)).thenReturn(person);
-        when(peopleRepository.save(person)).thenReturn(savedPerson);
-        when(personMapper.toResponse(any(Person.class))).thenReturn(responseDTO);
-
-        // when
+        // Act
         PersonResponseDTO result = peopleService.savePerson(dto);
 
-        // then
-        assertEquals(responseDTO.getId(), result.getId());
-        assertEquals(responseDTO.getUsername(), result.getUsername());
-        assertEquals(responseDTO.getEmail(), result.getEmail());
+        // Debug (временно)
+        System.out.println("Result DTO ID: " + result.getId());
 
-        verify(personMapper).toEntity(dto);
-        verify(peopleRepository).save(person);
-        verify(personMapper).toResponse(any(Person.class));
+        // Assert
+        assertEquals(1L, result.getId());
+        assertEquals("john", result.getUsername());
+        assertEquals("john@gmail.com", result.getEmail());
+
+        verify(passwordEncoder).encode("secret");
+        verify(peopleRepository).save(any(Person.class));
+    }
+
+    @Test
+    void modelMapper_shouldMapId() {
+        ModelMapper modelMapper = new ModelMapper();
+        PersonMapper mapper = new PersonMapper(modelMapper, passwordEncoder);
+
+        Person person = new Person();
+        person.setId(1L);
+        person.setUsername("john");
+        person.setEmail("john@gmail.com");
+
+        PersonResponseDTO dto = mapper.toResponse(person);
+
+        assertEquals(1L, dto.getId()); // если тут упадет — ModelMapper не мапит id
     }
 
     @Test
@@ -105,7 +130,6 @@ public class PeopleServiceTest {
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
         when(peopleRepository.findById(1L)).thenReturn(Optional.of(person));
-        when(personMapper.toResponse(person)).thenReturn(response);
 
         // when
         PersonResponseDTO result = peopleService.getCurrentUserInfo();
@@ -113,7 +137,6 @@ public class PeopleServiceTest {
         // than
         assertEquals("john", result.getUsername());
         verify(peopleRepository).findById(1L);
-        verify(personMapper).toResponse(person);
     }
 
     @Nested
@@ -138,24 +161,19 @@ public class PeopleServiceTest {
             updateDTO.setEmail("john@gmail.com");
             updateDTO.setPassword("secret");
 
-            PersonResponseDTO response = createSampleResponseDTO();
-
             when(peopleRepository.findById(1L)).thenReturn(Optional.of(person));
             when(passwordEncoder.encode("secret")).thenReturn("encoded-secret");
 
             // when
             when(peopleRepository.save(person)).thenReturn(person);
-            when(personMapper.toResponse(person)).thenReturn(response);
 
             PersonResponseDTO result = peopleService.updateCurrentUserInfo(updateDTO);
 
             // then
             assertEquals("encoded-secret", person.getPassword());
             assertEquals("john", result.getUsername());
-            verify(personConverter).updatePersonFromDtoWithFixedFields(updateDTO, person);
             verify(peopleRepository).findById(1L);
             verify(peopleRepository).save(person);
-            verify(personMapper).toResponse(person);
         }
 
         @Test

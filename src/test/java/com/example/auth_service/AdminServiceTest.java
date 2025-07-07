@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class AdminServiceTest {
+class AdminServiceTest {
     private static final Long PERSON_ID = 1L;
     private static final String USERNAME = "john";
     private static final String EMAIL = "john@gmail.com";

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class RefreshTokenServiceTests {
+class RefreshTokenServiceTests {
 
     @Mock
     private RedisTemplate<String, String> redisTemplate;

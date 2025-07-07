@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PeopleServiceTest {
+class PeopleServiceTest {
 
     @Mock
     private PeopleRepository peopleRepository;

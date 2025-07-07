@@ -25,7 +25,12 @@
 | `POST` | `/auth/login`    | Authenticate and receive JWT |
 | `POST` | `/auth/refresh`  | (Optional) Refresh JWT token |
 
-> Full OpenAPI (Swagger) documentation available at `/swagger-ui.html` (if enabled).
+## 📚 Documentation
+
+Interactive API available at:
+```
+http://localhost:8081/swagger-ui.html
+```
 
 ## 🛠 Technologies
 
@@ -43,6 +48,13 @@
 - Mockito
 - Spring Boot Test, MockMvc
 
+## 📚 Notes
+JWT is validated internally — no external auth call
+
+User data (e.g., userId) is extracted from the JWT
+
+Works behind gateway-service
+
 ## ⚙️ Configuration
 
 Environment variables required (in `.env` or Docker Compose):
@@ -58,3 +70,6 @@ JWT_EXPIRATION_MS=3600000
 |-------|-------------|------------|
 | Admin | `test2`     | `Test234!` |
 | User  | `jorge_doe` | `Zegh576!` |
+
+## 🔗 Related
+Part of the growly-infra project.

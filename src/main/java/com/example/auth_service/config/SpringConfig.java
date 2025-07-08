@@ -68,6 +68,7 @@ public class SpringConfig {
                                 "/swagger-resources/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers("/test-errors/**").permitAll()
                         .requestMatchers("/admin/promote").hasRole("USER")
                         .requestMatchers("/delete", "/profile", "/refresh", "/logout", "/update")
                         .hasAnyRole("USER", "ADMIN")

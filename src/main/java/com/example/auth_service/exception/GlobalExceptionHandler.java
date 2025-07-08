@@ -3,13 +3,12 @@ package com.example.auth_service.exception;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,16 +20,6 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO response = new ErrorResponseDTO();
         response.setStatus(403);
         response.setMessage("error: " + e.getMessage());
-        response.setPath(request.getRequestURI());
-
-        return ResponseEntity.badRequest().body(response);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponseDTO> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
-        ErrorResponseDTO response = new ErrorResponseDTO();
-        response.setStatus(400);
-        response.setMessage("error: Internal server error");
         response.setPath(request.getRequestURI());
 
         return ResponseEntity.badRequest().body(response);
@@ -50,6 +39,22 @@ public class GlobalExceptionHandler {
         ErrorResponseDTO response = new ErrorResponseDTO();
         response.setStatus(400);
         response.setMessage(combinedErrors);
+        response.setPath(request.getRequestURI());
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                               HttpServletRequest request) {
+        String paramName = ex.getName();
+        String invalidValue = String.valueOf(ex.getValue());
+
+        String message = String.format("Invalid value '%s' for parameter '%s'", invalidValue, paramName);
+
+        ErrorResponseDTO response = new ErrorResponseDTO();
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setMessage(message);
         response.setPath(request.getRequestURI());
 
         return ResponseEntity.badRequest().body(response);

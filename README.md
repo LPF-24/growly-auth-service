@@ -64,6 +64,14 @@ JWT_SECRET=internship
 JWT_EXPIRATION_MS=3600000
 ```
 
+## 🐳 Docker
+
+To build and run the service:
+
+```bash
+docker compose up --build auth-service
+```
+
 ## 👥 Sample Accounts
 
 | Role  | Username    | Password   |
@@ -72,4 +80,8 @@ JWT_EXPIRATION_MS=3600000
 | User  | `jorge_doe` | `Zegh576!` |
 
 ## 🔗 Related
-Part of the growly-infra project.
+Part of the [growly-infra](https://github.com/LPF-24/growly-infra) project.
+
+---
+
+> 🔐 **auth-service** — keeps your habits safe.

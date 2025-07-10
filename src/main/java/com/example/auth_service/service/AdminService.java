@@ -32,7 +32,10 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public List<PersonResponseDTO> findAllUsers() {
-        return peopleRepository.findAll().stream().map(personMapper::toResponse).toList();
+        return peopleRepository.findAll().stream()
+                .filter(person -> "ROLE_USER".equals(person.getRole()))
+                .map(personMapper::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)

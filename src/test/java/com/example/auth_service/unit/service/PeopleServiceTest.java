@@ -1,4 +1,4 @@
-package com.example.auth_service;
+package com.example.auth_service.unit.service;
 
 import com.example.auth_service.dto.PersonRequestDTO;
 import com.example.auth_service.dto.PersonResponseDTO;

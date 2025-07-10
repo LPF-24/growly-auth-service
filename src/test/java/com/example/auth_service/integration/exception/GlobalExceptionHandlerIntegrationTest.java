@@ -1,4 +1,4 @@
-package com.example.auth_service;
+package com.example.auth_service.integration.exception;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +78,5 @@ public class GlobalExceptionHandlerIntegrationTest {
                 .andExpect(jsonPath("$.message", containsString("Email should be valid")))
                 .andExpect(jsonPath("$.path").value("/registration"));
     }
-
 
 }

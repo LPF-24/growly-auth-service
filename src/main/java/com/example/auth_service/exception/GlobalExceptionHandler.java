@@ -18,11 +18,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ErrorResponseDTO> handleEntityNotFoundException(EntityNotFoundException e, HttpServletRequest request) {
         ErrorResponseDTO response = new ErrorResponseDTO();
-        response.setStatus(403);
+        response.setStatus(404);
         response.setMessage("error: " + e.getMessage());
         response.setPath(request.getRequestURI());
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

@@ -96,6 +96,7 @@ public class PeopleService {
         return personMapper.toResponse(peopleRepository.save(personToUpdate));
     }
 
+    @Transactional
     public void setLastLogin(Long userId) {
         Person currentUser = peopleRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " wasn't found!"));

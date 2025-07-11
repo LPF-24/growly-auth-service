@@ -256,10 +256,8 @@ public class AuthController {
             })
     @DeleteMapping("/delete")
     public ResponseEntity<String> deletePerson(@AuthenticationPrincipal PersonDetails personDetails) {
-        peopleService.deletePerson(personDetails.getId());
         Long personId = personDetails.getId();
-
-        peopleService.deletePerson(personId);
+        peopleService.deletePerson(personId); // один вызов
         return ResponseEntity.ok("User's account with id " + personId + " successfully deleted.");
     }
 

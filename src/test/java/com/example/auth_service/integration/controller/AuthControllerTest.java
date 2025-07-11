@@ -285,6 +285,79 @@ public class AuthControllerTest {
         }
     }
 
+    @Nested
+    class updateUserInfoTests {
+        private String token;
+        private PersonDetails personDetails;
+
+        @BeforeEach
+        void setUp() {
+            Person savedPerson = peopleRepository.save(createSamplePerson("maria12", "ROLE_USER"));
+            personDetails = new PersonDetails(savedPerson);
+            token = jwtUtil.generateAccessToken(savedPerson.getId(), savedPerson.getUsername(), "ROLE_USER");
+        }
+
+        @Test
+        void updateUserInfo_success() throws Exception {
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(personDetails, null, personDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            mockMvc.perform(patch("/update")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                            {
+                                "email": "mari25@gmail.com"
+                            }
+                            """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.username").value("maria12"))
+                    .andExpect(jsonPath("$.email").value("mari25@gmail.com"));
+        }
+
+        @Test
+        void updateUserInfo_shouldThrowsValidationException_whenDataIsNotCorrect() throws Exception {
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(personDetails, null, personDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            mockMvc.perform(patch("/update")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                       "username": "m",
+                                       "password": "test2",
+                                       "email": "maria12gmail.com"
+                                     }
+                                    """))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", Matchers.allOf(
+                            containsString("username:"),
+                            containsString("email:"),
+                            containsString("password:"))))
+                    .andExpect(jsonPath("$.path").value("/update"));
+        }
+
+        @Test
+        void updateUserInfo_shouldThrowsException_whenDataIsEmpty() throws Exception {
+            // Очищаем контекст вручную
+            SecurityContextHolder.clearContext();
+
+            mockMvc.perform(patch("/update")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "mari25@gmail.com"
+                                    }
+                                    """))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.message").value("Unauthorized: missing or invalid token"))
+                    .andExpect(jsonPath("$.path").value("/update"));
+        }
+    }
+
     private Person createSamplePerson(String username, String role) {
         Person person = new Person();
         person.setUsername(username);

@@ -77,7 +77,7 @@ public class PeopleService {
         Person personToUpdate = peopleRepository.findById(personDetails.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + personDetails.getId() + " wasn't found!"));
 
-        boolean allFieldsNull = Stream.of(
+        /*boolean allFieldsNull = Stream.of(
                 dto.getUsername(),
                 dto.getPassword(),
                 dto.getEmail()
@@ -85,7 +85,7 @@ public class PeopleService {
 
         if (allFieldsNull) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nothing to update");
-        }
+        }*/
 
         personConverter.updatePersonFromDtoWithFixedFields(dto, personToUpdate);
 

@@ -10,6 +10,7 @@ import com.example.auth_service.service.LogoutService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestLogoutConfig.class)
 public class AdminControllerIntegrationTests {
 
     @Autowired private MockMvc mockMvc;
@@ -47,19 +49,9 @@ public class AdminControllerIntegrationTests {
     private static final Long PERSON_ID = 1L;
     private static final String USERNAME = "john";
     private static final String EMAIL = "john@gmail.com";
-    
-    @MockBean
-    private LogoutService logoutService;
 
     @MockBean
     private KafkaTemplate<String, UserDeletedEvent> kafkaTemplate;
-
-    @BeforeEach
-    void setUp() {
-        when(logoutService.buildLogoutResponse(anyString()))
-                .thenReturn(ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, "token=; Max-Age=0")
-                        .body(Map.of("message", "Logged out successfully")));
-    }
 
     @AfterEach
     void clearDatabase() {

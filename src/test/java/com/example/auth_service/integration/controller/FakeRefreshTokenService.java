@@ -5,14 +5,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FakeRefreshTokenService extends RefreshTokenService {
+    private boolean shouldThrow = false;
 
     public FakeRefreshTokenService() {
         super(null); // RedisTemplate не нужен, потому что методы переопределяются
     }
 
+    public void setShouldThrow(boolean shouldThrow) {
+        this.shouldThrow = shouldThrow;
+    }
+
     @Override
     public void saveRefreshToken(String username, String refreshToken) {
-        // ничего не делаем
+        if (shouldThrow) {
+            throw new RuntimeException("Simulated failure");
+        }
     }
 
     @Override

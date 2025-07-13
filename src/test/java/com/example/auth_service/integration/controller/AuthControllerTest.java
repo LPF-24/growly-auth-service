@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -39,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestAuthConfig.class)
 public class AuthControllerTest {
 
     @Autowired private MockMvc mockMvc;
@@ -48,7 +50,7 @@ public class AuthControllerTest {
     @Autowired private JWTUtil jwtUtil;
 
     @MockBean private KafkaTemplate<String, UserDeletedEvent> kafkaTemplate;
-    @MockBean private RefreshTokenService refreshTokenService;
+    @Autowired private RefreshTokenService refreshTokenService;
     @MockBean private AuthenticationManager authenticationManager;
     @MockBean private PersonDetailsService personDetailsService;
 
@@ -69,10 +71,6 @@ public class AuthControllerTest {
 
             when(authenticationManager.authenticate(any(Authentication.class)))
                     .thenReturn(new UsernamePasswordAuthenticationToken(personDetails, null, personDetails.getAuthorities()));
-
-            doNothing()
-                    .when(refreshTokenService)
-                    .saveRefreshToken(eq("maria123"), any());
         }
 
         @Test
@@ -111,17 +109,16 @@ public class AuthControllerTest {
 
         @Test
         void performAuthentication_shouldReturn500_whenSaveRefreshTokenFails() throws Exception {
-            doThrow(new RuntimeException("Redis unavailable"))
-                    .when(refreshTokenService).saveRefreshToken(eq("maria123"), any());
+            ((FakeRefreshTokenService) refreshTokenService).setShouldThrow(true);
 
             mockMvc.perform(post("/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                            {
-                                "username": "maria123",
-                                "password": "password"
-                            }
-                            """))
+                                    {
+                                        "username": "maria123",
+                                        "password": "password"
+                                    }
+                                    """))
                     .andExpect(status().isInternalServerError())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.error").value("Internal server error"));

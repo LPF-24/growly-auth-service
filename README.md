@@ -72,12 +72,12 @@ To build and run the service:
 docker compose up --build auth-service
 ```
 
-## 👥 Sample Accounts
+## 👥 Sample Accounts (http://localhost:5173/login)
 
-| Role  | Username    | Password   |
-|-------|-------------|------------|
-| Admin | `test2`     | `Test234!` |
-| User  | `jorge_doe` | `Zegh576!` |
+| Role  | Username | Password   |
+|-------|----------|------------|
+| Admin | `admin`  | `ChangeMe_123!` |
+| User  | `user`   | `user123!` |
 
 ## 🔗 Related
 Part of the [growly-infra](https://github.com/LPF-24/growly-infra) project.

@@ -128,10 +128,10 @@ public class AuthController {
 
             ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
                     .maxAge(Duration.ofDays(7))
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .build();
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 

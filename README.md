@@ -64,14 +64,6 @@ JWT_SECRET=internship
 JWT_EXPIRATION_MS=3600000
 ```
 
-## 🐳 Docker
-
-To build and run the service:
-
-```bash
-docker compose up --build auth-service
-```
-
 ## 👥 Sample Accounts (http://localhost:5173/login)
 
 | Role  | Username | Password   |
